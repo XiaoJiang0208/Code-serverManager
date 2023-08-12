@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <title></title>
-        <link rel="stylesheet" href="{{ url_for('static', filename = 'css.css') }}">
+        <link rel="stylesheet" href="/static/css.css">
     </head>
     <body>
         <h1>Code-serverManager | Sign Up</h1>
@@ -11,7 +11,7 @@
             {% if msg != '0' %}
                 <h1>{{ msg }}</h1>
             {% endif %}
-            <form action="/api/signup" method="POST">
+            <form action="/signup" method="POST">
                 用户名:<input type="text" name="username"><br>
                 密码:<input type="password" name="password"><br>
                 确认密码:<input type="password" name="confpassword"><br>

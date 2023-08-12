@@ -1,4 +1,5 @@
 from flask import *
+import json
 #import sqlite3
 webapp = Flask(__name__)
 
@@ -14,17 +15,14 @@ def login():
         return redirect(url_for('login'))
 
 #注册系统
-@webapp.route('/signup/')
-def rtsignup():
-    return redirect('/signup/welcome')
-@webapp.route('/signup/<msg>/', methods=['GET', 'POST'])
-def signup(msg):
+@webapp.route('/signup/', methods=['GET', 'POST'])
+def signup():
     if request.method=='GET':
-        return render_template('signup.html',msg=msg)
+        return render_template('signup.html',msg="")
     elif request.method=='POST':
         if request.form.get('password')!=request.form.get('confpassword'):
-            return redirect('/login/密码不匹配!')
-        return redirect(url_for('login'))
+            return render_template('signup.html',msg="密码不匹配！")
+        
    
 
 def adduser(username,password,pwoer):
