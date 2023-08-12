@@ -8,8 +8,8 @@
     <body>
         <h1>Code-serverManager | Sign Up</h1>
         <dev>
-            {% if msg %}
-                <h1>{{ msg }}!</h1>
+            {% if msg != '0' %}
+                <h1>{{ msg }}</h1>
             {% endif %}
             <form action="/api/signup" method="POST">
                 用户名:<input type="text" name="username"><br>
