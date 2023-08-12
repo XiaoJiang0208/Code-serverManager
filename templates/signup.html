@@ -8,11 +8,10 @@
     <body>
         <h1>Code-serverManager | Sign Up</h1>
         <dev>
-            {% if msg != '0' %}
-                <h1>{{ msg }}</h1>
-            {% endif %}
+            
+            <h1 id="msg">{{ msg }}</h1>
             <form action="/signup" method="POST">
-                用户名:<input type="text" name="username"><br>
+                用户名:<input type="text" name="username" id="username"><br>
                 密码:<input type="password" name="password"><br>
                 确认密码:<input type="password" name="confpassword"><br>
                 <input type="submit">
