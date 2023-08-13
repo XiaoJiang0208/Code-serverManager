@@ -2,20 +2,39 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title></title>
-        <link rel="stylesheet" href="/static/css.css">
+        <title>Code-serverManager | Sign Up</title>
+        <link rel="stylesheet" href="/static/login.css">
     </head>
     <body>
-        <h1>Code-serverManager | Sign Up</h1>
-        <dev>
-            
-            <h1 id="msg">{{ msg }}</h1>
-            <form action="/signup" method="POST">
-                用户名:<input type="text" name="username" id="username"><br>
-                密码:<input type="password" name="password"><br>
-                确认密码:<input type="password" name="confpassword"><br>
-                <input type="submit">
-            </form>
-        </dev>
+        <h1 class="title">Code-serverManager | Sign Up</h1>
+        <div class="box">
+            <div class="inbox">
+                <h1 id="msg">{{ msg }}</h1>
+                <form action="/signup" method="POST"  id="form">
+                    <p>用户名:</p><input type="text" name="username" id="username"><br>
+                    <p>密码:</p><input type="password" name="password" id="password"><br>
+                    <p>确认密码:</p><input type="password" name="confpassword" id="confpassword"><br>
+                    <input type="submit" value="登录" class="bt">
+                </form>
+            </div>
+        </div>
+        <script>
+            form.addEventListener("submit",function(e){
+                var username=document.getElementById('username').value;
+                var pw1=document.getElementById('password').value;
+                var pw2=document.getElementById('confpassword').value;
+                var form=document.getElementById("form");
+                if(username==""){
+                    e.preventDefault();
+                    var h=document.getElementById("msg");
+                    h.textContent="用户名不能为空！";
+                }
+                if(pw1!=pw2){
+                    e.preventDefault();
+                    var h=document.getElementById("msg");
+                    h.textContent="密码不匹配！";
+                }
+            },false);
+        </script>
     </body>
 </html>

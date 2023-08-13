@@ -3,16 +3,19 @@
     <head>
         <meta charset="utf-8">
         <title></title>
-        <link rel="stylesheet" href="/static/css.css">
+        <link rel="stylesheet" href="/static/login.css">
     </head>
     <body>
-        <h1>Code-serverManager | Login</h1>
-        <dev>
-            <form action="/login" method="POST">
-                用户名:<input type="text" name="username"><br>
-                密码:<input type="password" name="password"><br>
-                <input type="submit">
-            </form>
-        </dev>
+        <h1 class="title">Code-serverManager | Login</h1>
+        <div class="box">
+            <div class="inbox">
+                <h1 id="msg">{{ msg }}</h1>
+                <form action="/login" method="POST">
+                    <p>用户名:</p><input type="text" name="username"><br>
+                    <p>密码:</p><input type="password" name="password"><br>
+                    <input type="submit" value="登录" class="bt">
+                </form>
+            </div>
+        </div>
     </body>
 </html>
