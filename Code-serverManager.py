@@ -2,6 +2,9 @@ from flask import *
 import secrets
 import datetime
 import json
+import os
+import signal
+import random
 #import sqlite3
 webapp = Flask(__name__)
 
@@ -14,7 +17,6 @@ def login():
         return render_template('login.html')
     elif request.method=='POST':
         if checkuser(request.form.get('username'),request.form.get('password')):
-            
             red=redirect(url_for('main'))
             red.set_cookie('username',request.form.get('username'))
             red.set_cookie('token',settoken(request.form.get('username')))
@@ -28,7 +30,7 @@ def signup():
         return render_template('signup.html',msg="")
     elif request.method=='POST':
         if adduser(request.form.get('username'),request.form.get('password'),'admin'):
-            return render_template('signup.html',msg='注册成功!<a href="/login">点击登录</a>')
+            return render_template('signup.html',msg='注册成功!')
         return render_template('signup.html',msg='用户已存在!')
 
 #主管理界面
@@ -43,6 +45,7 @@ def main():
 #用户数据操作
 #添加用户
 def adduser(username,password,pwoer):
+    #添加数据
     with open('./config/userdata.json','r') as f:
         data=json.load(f)
     for i in data['users']:
@@ -51,7 +54,12 @@ def adduser(username,password,pwoer):
     data['users'].append({'username':username,'password':password,'pwoer':pwoer,'token':'','tokendate':''})
     with open('./config/userdata.json','w') as f:
         json.dump(data,f)
+    #系统操作
+    with open('./config/webapp.json','r') as f:
+        data=json.load(f)
+    os.system(f'useradd -s /bin/bash -g {data["user-group"]} -d {data["user-dir"]}/{username} -m {username}')
     return 1
+
 #验证用户
 def checkuser(username,password):
     with open('./config/userdata.json','r') as f:
@@ -61,6 +69,7 @@ def checkuser(username,password):
             if i['password']==password:
                 return 1
     return 0
+
 #生成用户token
 def settoken(username):
     with open('./config/userdata.json','r') as f:
@@ -77,6 +86,7 @@ def settoken(username):
     with open('./config/userdata.json','w') as f:
         json.dump(data,f)
     return tk
+
 def checktoken(username,token):
     with open('./config/userdata.json','r') as f:
         data=json.load(f)
@@ -89,8 +99,41 @@ def checktoken(username,token):
     
     
 
+def done():
+    pass
+    #systemctl list-units --type=service --state=active | grep code-server
     
+def startserver():
+    status=os.popen('systemctl list-units --type=service --state=active | grep code-server').readlines()
+    with open('./config/webapp.json','r') as f:
+        setting=json.load(f)
+    with open('./config/userdata.json','r') as f:
+        data=json.load(f)
+    for i in data['users']:
+        for j in status:
+            if j.split('@')[1].split('.')[0]==i['username']:
+                break
+            with open(f'{setting["user-dir"]}/{i["username"]}','w') as f:
+                while True:
+                    if len(usedport)>setting["user-port"].split('~')[1]-setting["user-port"].split('~')[0]:
+                        return 0
+                    p=random.randint(setting["user-port"].split('~')[0], setting["user-port"].split('~')[1])
+                    if p not in usedport:
+                        usedport.append(p)
+                        break
+                f.write(f'''
+                    bind-addr: 0.0.0.0:{p}
+                    auth: password
+                    password: {i["password"]}
+                    cert: false
+                ''')
+            os.popen(f'systemctl start code-server@{i["username"]}')
+            
+
+usedport=[]
 
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGKILL, done)
+    signal.signal(signal.SIGINT, done)
     webapp.run(host='0.0.0.0',port=5000,debug=True)

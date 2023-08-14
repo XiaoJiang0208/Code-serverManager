@@ -2,5 +2,6 @@
     "ip":"0.0.0.0",
     "port":"5000",
     "code-server-port":"5001~5010",
-    "user-dir":"~/code-server-dir"
+    "user-dir":"/home/code-server-dir",
+    "user-group":"webapp"
 }
