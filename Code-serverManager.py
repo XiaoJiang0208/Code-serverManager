@@ -37,7 +37,7 @@ def signup():
 @webapp.route('/main/',methods=['GET', 'POST'])
 def main():
     if checktoken(request.cookies.get('username'),request.cookies.get('token')):
-        return "test"
+        return render_template('main.html',URL='https://www.runoob.com')
     return redirect(url_for('login'))
 
         
@@ -110,9 +110,12 @@ def startserver():
     with open('./config/userdata.json','r') as f:
         data=json.load(f)
     for i in data['users']:
+        s=1
         for j in status:
             if j.split('@')[1].split('.')[0]==i['username']:
+                s=0
                 break
+        if s:
             with open(f'{setting["user-dir"]}/{i["username"]}','w') as f:
                 while True:
                     if len(usedport)>setting["user-port"].split('~')[1]-setting["user-port"].split('~')[0]:
@@ -134,6 +137,6 @@ usedport=[]
 
 
 if __name__ == "__main__":
-    signal.signal(signal.SIGKILL, done)
-    signal.signal(signal.SIGINT, done)
+    #signal.signal(signal.SIGKILL, done)
+    #signal.signal(signal.SIGINT, done)
     webapp.run(host='0.0.0.0',port=5000,debug=True)
