@@ -3,9 +3,15 @@ import secrets
 import datetime
 import json
 import os
-import signal
+#import signal
 import random
 #import sqlite3
+import asyncio
+import websockets
+import time
+from multiprocessing import Process
+
+
 webapp = Flask(__name__)
 
 
@@ -36,11 +42,21 @@ def signup():
 #主管理界面
 @webapp.route('/main/',methods=['GET', 'POST'])
 def main():
+    global setting
     if checktoken(request.cookies.get('username'),request.cookies.get('token')):
-        return render_template('main.html',URL='https://www.runoob.com')
+        return render_template('main.html',URL='https://www.runoob.com',ip=setting['outip'],wsip=setting['outip'].split(':')[0]+':'+str(int(setting['outip'].split(':')[1])+1))
     return redirect(url_for('login'))
 
-        
+
+#API
+#用户保持
+@webapp.route('/api/userkeep/',methods=['GET'])
+def userkeep():
+    print("OK!")
+    print(request.cookies.get('username'))
+    return 'keeping!'
+
+
 
 #用户数据操作
 #添加用户
@@ -99,14 +115,17 @@ def checktoken(username,token):
     
     
 
-def done():
-    pass
+def stop():
+    status=os.popen('systemctl list-units --type=service --state=active | grep code-server').readlines()
+    print('EXIT!')
+    for s in status:
+        os.popen(f'systemctl stop code-server@{s.split("@")[1].split(".")[0]}')
     #systemctl list-units --type=service --state=active | grep code-server
     
+
+
 def startserver():
     status=os.popen('systemctl list-units --type=service --state=active | grep code-server').readlines()
-    with open('./config/webapp.json','r') as f:
-        setting=json.load(f)
     with open('./config/userdata.json','r') as f:
         data=json.load(f)
     for i in data['users']:
@@ -131,12 +150,38 @@ def startserver():
                     cert: false
                 ''')
             os.popen(f'systemctl start code-server@{i["username"]}')
-            
 
-usedport=[]
+
+#利用ws实现用户保持
+async def echo(websocket, path):
+    async for message in websocket:
+        global setting
+        print('keep')
+        #message = "I got your message: {}".format(message)
+        #await websocket.send(message)
+        ot=time.time()
+        while message=='keep!':
+            if time.time()-ot>=0.1*60:
+                ot=time.time()
+                await websocket.send("keep?")
+                break
+    print('exit')
 
 
 if __name__ == "__main__":
-    #signal.signal(signal.SIGKILL, done)
-    #signal.signal(signal.SIGINT, done)
-    webapp.run(host='0.0.0.0',port=5000,debug=True)
+    global setting #服务设置
+    global usedport #已使用的端口
+    usedport=[]
+    global onlineuser #在线用户
+    onlineuser=[]
+    with open('./config/webapp.json','r') as f:
+        setting=json.load(f)
+    def ws():
+        asyncio.get_event_loop().run_until_complete(websockets.serve(echo, setting['ip'].split(':')[0], int(setting['ip'].split(':')[1])+1))
+        asyncio.get_event_loop().run_forever()
+    p=Process(target=ws)
+    p.start()
+    webapp.run(host=setting['ip'].split(':')[0],port=setting['ip'].split(':')[1])
+    stop()
+    #signal.signal(signal.SIGTERM, stop)
+    #signal.signal(signal.SIGINT, stop)
