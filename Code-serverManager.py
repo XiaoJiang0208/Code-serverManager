@@ -35,11 +35,11 @@ def signup():
     if request.method=='GET':
         return render_template('signup.html',msg="")
     elif request.method=='POST':
-        if adduser(request.form.get('username'),request.form.get('password'),'admin'):
+        if adduser(request.form.get('username'),request.form.get('password'),'user'):
             return render_template('signup.html',msg='注册成功!')
         return render_template('signup.html',msg='用户已存在!')
 
-#主管理界面
+#主界面
 @webapp.route('/main/',methods=['GET', 'POST'])
 def main():
     global setting
@@ -50,18 +50,27 @@ def main():
         return '启动服务失败'
     return redirect(url_for('login'))
 
+#管理界面
+@webapp.route('/admin/',methods=['GET', 'POST'])
+def admin():
+    if checktoken(request.cookies.get('username'),request.cookies.get('token')):
+        if isadmin(request.cookies.get('username')):
+            return render_template('admin.html')
+        return redirect(url_for('main'))
+    return redirect(url_for('login'))
+
 
 
 #用户数据操作
 #添加用户
-def adduser(username,password,pwoer):
+def adduser(username,password,power):
     #添加数据
     with open('./config/userdata.json','r') as f:
         data=json.load(f)
     for i in data['users']:
         if i['username']==username:
             return 0
-    data['users'].append({'username':username,'password':password,'pwoer':pwoer,'token':'','tokendate':''})
+    data['users'].append({'username':username,'password':password,'power':power,'token':'','tokendate':''})
     with open('./config/userdata.json','w') as f:
         json.dump(data,f)
     #系统操作
@@ -71,6 +80,27 @@ def adduser(username,password,pwoer):
     os.system(f'useradd -s /bin/bash -g {data["user-group"]} -d {data["user-dir"]}/{username} -m {username}')
     os.system(f'chown -R {username}:{data["user-group"]} {data["user-dir"]}/{username}')
     return 1
+
+#删除用户
+def deluser(username):
+    with open('./config/userdata.json','r') as f:
+        data=json.load(f)
+    for i in data['users']:
+        if i['username']==username:
+            data.remove(i)
+            os.system(f'userdel -r {username}')
+            return 1
+    return 0
+
+#验证用户是否为管理员
+def isadmin(username):
+    with open('./config/userdata.json','r') as f:
+        data=json.load(f)
+    for i in data['users']:
+        if i['username']==username:
+            if i['power']=='admin':
+                return 1
+    return 0
 
 #验证用户
 def checkuser(username,password):
