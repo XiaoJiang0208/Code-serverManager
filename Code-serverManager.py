@@ -53,11 +53,14 @@ def main():
 #管理界面
 @webapp.route('/admin/',methods=['GET', 'POST'])
 def admin():
-    if checktoken(request.cookies.get('username'),request.cookies.get('token')):
-        if isadmin(request.cookies.get('username')):
-            return render_template('admin.html')
-        return redirect(url_for('main'))
-    return redirect(url_for('login'))
+    if request.method=='GET':
+        if checktoken(request.cookies.get('username'),request.cookies.get('token')):
+            if isadmin(request.cookies.get('username')):
+                return render_template('admin.html')
+            return redirect(url_for('main'))
+        return redirect(url_for('login'))
+    elif request.method=='POST':
+        return redirect(url_for('admin'))
 
 
 
