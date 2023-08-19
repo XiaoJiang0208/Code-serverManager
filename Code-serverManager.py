@@ -44,17 +44,11 @@ def signup():
 def main():
     global setting
     if checktoken(request.cookies.get('username'),request.cookies.get('token')):
-        return render_template('main.html',URL='https://www.runoob.com',ip=setting['outip'],wsip=setting['outip'].split(':')[0]+':'+str(int(setting['outip'].split(':')[1])+1))
+        p=startserver(request.cookies.get('username'))#启动服务
+        if p:
+            return render_template('main.html',URL='http://'+setting['outip'].split(':')[0]+':'+p,ip=setting['outip'],wsip=setting['outip'].split(':')[0]+':'+str(int(setting['outip'].split(':')[1])+1))
+        return '启动服务失败'
     return redirect(url_for('login'))
-
-
-#API
-#用户保持
-@webapp.route('/api/userkeep/',methods=['GET'])
-def userkeep():
-    print("OK!")
-    print(request.cookies.get('username'))
-    return 'keeping!'
 
 
 
@@ -73,7 +67,9 @@ def adduser(username,password,pwoer):
     #系统操作
     with open('./config/webapp.json','r') as f:
         data=json.load(f)
+    os.system(f'sudo -u webapp mkdir {data["user-dir"]}/{username}')
     os.system(f'useradd -s /bin/bash -g {data["user-group"]} -d {data["user-dir"]}/{username} -m {username}')
+    os.system(f'chown -R {username}:{data["user-group"]} {data["user-dir"]}/{username}')
     return 1
 
 #验证用户
@@ -115,64 +111,69 @@ def checktoken(username,token):
     
     
 
-def stop():
+def stopallserver():
     status=os.popen('systemctl list-units --type=service --state=active | grep code-server').readlines()
     print('EXIT!')
     for s in status:
-        os.popen(f'systemctl stop code-server@{s.split("@")[1].split(".")[0]}')
+        os.popen(f'sudo systemctl stop code-server@{s.split("@")[1].split(".")[0]}')
     #systemctl list-units --type=service --state=active | grep code-server
     
+def stopserver(username):
+    os.popen(f'sudo systemctl stop code-server@{username}')
 
-
-def startserver():
-    status=os.popen('systemctl list-units --type=service --state=active | grep code-server').readlines()
-    with open('./config/userdata.json','r') as f:
-        data=json.load(f)
-    for i in data['users']:
-        s=1
-        for j in status:
-            if j.split('@')[1].split('.')[0]==i['username']:
-                s=0
+def startserver(username):
+    '''启动code-server服务,输入用户名,输出使用的端口,如当前用户的服务已启用直接返回在使用的端口'''
+    status=os.popen('sudo systemctl list-units --type=service --state=active | grep code-server').readlines()
+    for j in status:
+        if j.split('@')[1].split('.')[0]==username:
+            with open(f'{setting["user-dir"]}/{username}/.config/code-server/config.yaml','r') as f:
+                port=f.readlines()
+                for i in port:
+                    if 'bind-addr' in i:
+                        return i.split(':')[2]
+                return 0
+    os.system(f'sudo -u webapp mkdir -p {setting["user-dir"]}/{username}/.config/code-server')
+    with open(f'{setting["user-dir"]}/{username}/.config/code-server/config.yaml','w+') as of:
+        while True: #抽一个端口
+            if len(usedport)>=int(setting["code-server-port"].split('~')[1])-int(setting["code-server-port"].split('~')[0]):
+                return 0
+            p=random.randint(int(setting["code-server-port"].split('~')[0]), int(setting["code-server-port"].split('~')[1]))
+            if p not in usedport:
+                usedport.append(p)
                 break
-        if s:
-            with open(f'{setting["user-dir"]}/{i["username"]}','w') as f:
-                while True:
-                    if len(usedport)>setting["user-port"].split('~')[1]-setting["user-port"].split('~')[0]:
-                        return 0
-                    p=random.randint(setting["user-port"].split('~')[0], setting["user-port"].split('~')[1])
-                    if p not in usedport:
-                        usedport.append(p)
-                        break
-                f.write(f'''
-                    bind-addr: 0.0.0.0:{p}
-                    auth: password
-                    password: {i["password"]}
-                    cert: false
-                ''')
-            os.popen(f'systemctl start code-server@{i["username"]}')
+        with open('./config/userdata.json','r') as inf:
+            data=json.load(inf)
+        for i in data['users']:
+            if i['username']==username:
+                password=i['password']
+                break
+        of.write(f'bind-addr: 0.0.0.0:{p}\nauth: password\npassword: {password}\ncert: false')
+    os.popen(f'sudo systemctl start code-server@{username}')
+    return str(p)
 
 
 #利用ws实现用户保持
 async def echo(websocket, path):
     async for message in websocket:
         global setting
-        print('keep')
+        username=message.split('!')[1]
+        #print(message)
         #message = "I got your message: {}".format(message)
         #await websocket.send(message)
         ot=time.time()
-        while message=='keep!':
-            if time.time()-ot>=0.1*60:
+        while 'keep!' in message:
+            if time.time()-ot>=setting['keeptime']*60:
                 ot=time.time()
                 await websocket.send("keep?")
                 break
-    print('exit')
+    stopserver(username)
 
 
 if __name__ == "__main__":
     global setting #服务设置
     global usedport #已使用的端口
     usedport=[]
-    global onlineuser #在线用户
+    #global onlineuser #在线用户
     onlineuser=[]
     with open('./config/webapp.json','r') as f:
         setting=json.load(f)
@@ -182,6 +183,7 @@ if __name__ == "__main__":
     p=Process(target=ws)
     p.start()
     webapp.run(host=setting['ip'].split(':')[0],port=setting['ip'].split(':')[1])
-    stop()
+    p.close
+    stopallserver()
     #signal.signal(signal.SIGTERM, stop)
     #signal.signal(signal.SIGINT, stop)

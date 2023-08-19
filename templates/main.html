@@ -6,52 +6,22 @@
     <link rel="stylesheet" href="/static/main.css">
     <title>Code-server</title>
 </head>
-<body onload="WebSocketTest()">
+<body>
     <iframe id="main" src="{{URL}}" sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation"></iframe>
     <script type="text/javascript">
-        //实现Iframe的click事件的检测
-        var IframeOnClick = {  
-            resolution: 200,  
-            iframes: [],  
-            interval: null,  
-            Iframe: function() {  
-                this.element = arguments[0];  
-                this.cb = arguments[1];   
-                this.hasTracked = false;  
-            },  
-            track: function(element, cb) {  
-                this.iframes.push(new this.Iframe(element, cb));  
-                if (!this.interval) {  
-                    var _this = this;  
-                    this.interval = setInterval(function() { _this.checkClick(); }, this.resolution);  
-                }  
-            },  
-            checkClick: function() {  
-                if (document.activeElement) {  
-                    var activeElement = document.activeElement;  
-                    for (var i in this.iframes) {  
-                        if (activeElement === this.iframes[i].element) { // user is in this Iframe  
-                            if (this.iframes[i].hasTracked == false) {   
-                                this.iframes[i].cb.apply(window, []);   
-                                this.iframes[i].hasTracked = true;  
-                            }  
-                        } else {  
-                            this.iframes[i].hasTracked = false;  
-                        }  
-                    }  
-                }  
-            }  
-        };
-        //绑定iframe的click事件
-        IframeOnClick.track(document.getElementById("main"), function() {
-            const Http = new XMLHttpRequest();
-            const url='http://{{ip}}/api/userkeep';
-            Http.open("GET", url);
-            Http.send();
-            Http.onreadystatechange = (e) => {
-            console.log(Http.responseText)
+        function getCookie(cookieName) {
+            const strCookie = document.cookie
+            const cookieList = strCookie.split(';')
+            
+            for(let i = 0; i < cookieList.length; i++) {
+              const arr = cookieList[i].split('=')
+              if (cookieName === arr[0].trim()) {
+                return arr[1]
+              }
             }
-        });
+            
+            return ''
+          }
         if ("WebSocket" in window) {
             console.log('666')
             // 打开一个 web socket
@@ -59,21 +29,23 @@
             // 连接建立后的回调函数
             ws.onopen = function () {
                 // Web Socket 已连接上，使用 send() 方法发送数据
-                ws.send("keep!");
-                console.log('666')
+                var x = document.cookie
+                ws.send("keep!"+getCookie("username"));
+                //console.log('已启动工作区!')
             };
 
             // 接收到服务器消息后的回调函数
             ws.onmessage = function (evt) {
                 var received_msg = evt.data;
                 if (received_msg.indexOf("sorry") == -1) {
-                    ws.send("keep!")
+                    var x = document.cookie
+                    ws.send("keep!"+getCookie("username"));
                 }
             };
             // 连接关闭后的回调函数
             ws.onclose = function () {
                 // 关闭 websocket
-                alert("连接已关闭... 您的工作区会在一会儿被关闭!");
+                alert("连接已被关闭... 您的工作区会在一会儿被关闭!");
             };
         } else {
             // 浏览器不支持 WebSocket
