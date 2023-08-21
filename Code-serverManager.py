@@ -32,12 +32,15 @@ def login():
 #注册系统
 @webapp.route('/signup/', methods=['GET', 'POST'])
 def signup():
-    if request.method=='GET':
-        return render_template('signup.html',msg="")
-    elif request.method=='POST':
-        if adduser(request.form.get('username'),request.form.get('password'),'user'):
-            return render_template('signup.html',msg='注册成功!')
-        return render_template('signup.html',msg='用户已存在!')
+    global setting
+    if setting['cansignup']=='true':
+        if request.method=='GET':
+            return render_template('signup.html',msg="")
+        elif request.method=='POST':
+            if adduser(request.form.get('username'),request.form.get('password'),'user'):
+                return render_template('signup.html',msg='注册成功!')
+            return render_template('signup.html',msg='用户已存在!')
+    return redirect(url_for('login'))
 
 #主界面
 @webapp.route('/main/',methods=['GET', 'POST'])
@@ -60,6 +63,24 @@ def admin():
             return redirect(url_for('main'))
         return redirect(url_for('login'))
     elif request.method=='POST':
+        if request.form.get('model') == 'signup':#注册
+            if adduser(request.form.get('username'),request.form.get('password'),'user'):
+                return render_template('admin.html',msg='注册成功!')
+            return render_template('admin.html',msg='用户已存在!')
+        if request.form.get('model') == 'deluser':#用户删除
+            if deluser(request.form.get('username')):
+                return render_template('admin.html',msg='删除成功!')
+            return render_template('admin.html',msg='删除失败!')
+        if request.form.get('model') == 'changepower':#更改用户权限
+            if cgadmin(request.form.get('username'),request.form.get('power')):
+                return render_template('admin.html',msg='修改成功!')
+            return render_template('admin.html',msg='修改失败!')
+        if request.form.get('model') == 'cansignup':#更改是否可以自行注册
+            global setting
+            setting['cansignup']=request.form.get('can')
+            with open('./config/webapp.json','w') as f:
+                json.dump(setting,f)
+            return render_template('admin.html',msg='修改完成!')
         return redirect(url_for('admin'))
 
 
@@ -90,9 +111,11 @@ def deluser(username):
         data=json.load(f)
     for i in data['users']:
         if i['username']==username:
-            data.remove(i)
+            data['users'].remove(i)
             os.system(f'userdel -r {username}')
             return 1
+    with open('./config/userdata.json','w') as f:
+        json.dump(data,f)
     return 0
 
 #验证用户是否为管理员
@@ -104,6 +127,19 @@ def isadmin(username):
             if i['power']=='admin':
                 return 1
     return 0
+
+#设置管理员
+def cgadmin(username,power):
+    with open('./config/userdata.json','r') as f:
+        data=json.load(f)
+    for i in data['users']:
+        if i['username']==username:
+            i['power']=power
+            break
+        return 0
+    with open('./config/userdata.json','w') as f:
+        json.dump(data,f)
+    return 1
 
 #验证用户
 def checkuser(username,password):

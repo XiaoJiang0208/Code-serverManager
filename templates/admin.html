@@ -8,17 +8,67 @@
 </head>
 <body>
     <h1 class="title">Code-serverManager | Admin</h1>
+    <h3 class="title">{{msg}}</h1>
     <div class="box">
         <div class="inbox">
-            <form action="/login" method="POST">
+            <h1>注册用户</h1>
+            <form action="/admin" method="POST">
+                <input type="hidden" name="model" value="signup">
+                <p>用户名:</p><input type="text" name="username" id="username"><br>
+                <p>密码:</p><input type="password" name="password" id="password"><br>
+                <p>确认密码:</p><input type="password" name="confpassword" id="confpassword"><br>
+                <input type="submit" value="注册" class="bt">
+            </form>
+        </div>
+    </div>
+    <div class="box">
+        <div class="inbox">
+            <h1>删除用户</h1>
+            <form action="/admin" method="POST">
+                <input type="hidden" name="model" value="deluser">
                 <p>用户名:</p><input type="text" name="username"><br>
-                <p>密码:</p><input type="password" name="password"><br>
-                <input type="submit" value="登录" class="bt">
+                <input type="submit" value="删除" class="bt">
+            </form>
+        </div>
+    </div>
+    <div class="box">
+        <div class="inbox">
+            <h1>修改用户权限 </h1>
+            <form action="/admin" method="POST">
+                <input type="hidden" name="model" value="changepower">
+                <p>用户名:</p><input type="text" name="username"><br>
+                <p>权限:</p><input type="radio" name="power" value="admin">Admin<input type="radio" name="power" value="user">User<p></p>
+                <input type="submit" value="修改" class="bt">
+            </form>
+        </div>
+    </div>
+    <div class="box">
+        <div class="inbox">
+            <h1>是否可以自行注册</h1>
+            <form action="/admin" method="POST">
+                <input type="hidden" name="model" value="cansignup">
+                <p>权限:</p><input type="radio" name="can" value="true">允许自行注册<input type="radio" name="can" value="false">不允许自行注册<p></p>
+                <input type="submit" value="修改" class="bt">
             </form>
         </div>
     </div>
     <script type="text/javascript">
-
+        form.addEventListener("submit",function(e){
+            var username=document.getElementById('username').value;
+            var pw1=document.getElementById('password').value;
+            var pw2=document.getElementById('confpassword').value;
+            var form=document.getElementById("form");
+            if(username==""){
+                e.preventDefault();
+                var h=document.getElementById("msg");
+                h.textContent="用户名不能为空！";
+            }
+            if(pw1!=pw2){
+                e.preventDefault();
+                var h=document.getElementById("msg");
+                h.textContent="密码不匹配！";
+            }
+        },false);
     </script>
 </body>
 </html>
