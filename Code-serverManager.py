@@ -114,9 +114,9 @@ def deluser(username):
         if i['username']==username:
             data['users'].remove(i)
             os.system(f'userdel -r {username}')
+            with open('./config/userdata.json','w') as f:
+                json.dump(data,f)
             return 1
-    with open('./config/userdata.json','w') as f:
-        json.dump(data,f)
     return 0
 
 #验证用户是否为管理员
@@ -136,11 +136,10 @@ def cgadmin(username,power):
     for i in data['users']:
         if i['username']==username:
             i['power']=power
-            break
-        return 0
-    with open('./config/userdata.json','w') as f:
-        json.dump(data,f)
-    return 1
+            with open('./config/userdata.json','w') as f:
+                json.dump(data,f)
+            return 1
+    return 0
 
 #验证用户
 def checkuser(username,password):
