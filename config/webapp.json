@@ -2,7 +2,7 @@
     "ip": "0.0.0.0:5000", 
     "outip": "0.0.0.0:5000", 
     "code-server-port": "5002~5010", 
-    "user-dir": "/home/code-server-dir", 
+    "user-dir": "/home/code-server", 
     "user-group": "webapp", 
     "keeptime": 10, 
     "cansignup": "true"
