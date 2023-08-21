@@ -50,6 +50,15 @@ sudo python3 Code-serverManager.py
 可以写个开机脚本或者注册个服务实现开机启动，但是你们自己研究我懒😊
 注意`Code-serverManager.py`必须以管理员(需要创建和删除用户)启动
 
+# 创建管理员
+先登录`http://{url}/signup`注册账户
+再修改`webapp/userdata.json`的`power`为`admin`
+
+# 页面说明
+http://{url}/login    登录页面
+http://{url}/signup   注册页面
+http://{url}/admin    管理页面(需要管理员权限)
+http://{url}/main     主页面
 
 # 待实现功能
 > - [ ] 数据库存储数据
