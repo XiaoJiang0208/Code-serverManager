@@ -100,7 +100,8 @@ def adduser(username,password,power):
     #系统操作
     with open('./config/webapp.json','r') as f:
         data=json.load(f)
-    os.system(f'sudo -u webapp mkdir {data["user-dir"]}/{username}')
+    global setting
+    os.system(f'sudo -u {setting["user-group"]} mkdir {data["user-dir"]}/{username}')
     os.system(f'useradd -s /bin/bash -g {data["user-group"]} -d {data["user-dir"]}/{username} -m {username}')
     os.system(f'chown -R {username}:{data["user-group"]} {data["user-dir"]}/{username}')
     return 1
@@ -201,7 +202,7 @@ def startserver(username):
                     if 'bind-addr' in i:
                         return i.split(':')[2]
                 return 0
-    os.system(f'sudo -u webapp mkdir -p {setting["user-dir"]}/{username}/.config/code-server')
+    os.system(f'sudo -u {setting["user-group"]} mkdir -p {setting["user-dir"]}/{username}/.config/code-server')
     with open(f'{setting["user-dir"]}/{username}/.config/code-server/config.yaml','w+') as of:
         while True: #抽一个端口
             if len(usedport)>=int(setting["code-server-port"].split('~')[1])-int(setting["code-server-port"].split('~')[0]):
