@@ -56,10 +56,12 @@ sudo python3 Code-serverManager.py
 再修改`webapp/userdata.json`的`power`为`admin`
 
 # 页面说明
+```
 http://{url}/login    登录页面
 http://{url}/signup   注册页面
 http://{url}/admin    管理页面(需要管理员权限)
 http://{url}/main     主页面
+```
 
 # 待实现功能
 > - [ ] 数据库存储数据
