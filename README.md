@@ -43,7 +43,7 @@ sudo apt-get install screen
 ```
 新建screen工作区并用`sudo`启动`Code-serverManager.py`
 ```
-screen -S csm   #创建叫csm的工作区
+screen -R csm   #创建叫csm的工作区
 sudo python3 Code-serverManager.py
 #按快捷键Ctrl+a然后后按d退出工作区
 ```
