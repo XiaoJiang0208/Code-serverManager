@@ -104,6 +104,7 @@ def adduser(username,password,power):
     os.system(f'sudo -u {setting["user-group"]} mkdir {data["user-dir"]}/{username}')
     os.system(f'useradd -s /bin/bash -g {data["user-group"]} -d {data["user-dir"]}/{username} -m {username}')
     os.system(f'chown -R {username}:{data["user-group"]} {data["user-dir"]}/{username}')
+    os.system(f'chmod a-w,a-r,a-x,u+w,u+r,u+x {data["user-dir"]}/{username}')
     return 1
 
 #删除用户
@@ -113,7 +114,7 @@ def deluser(username):
     for i in data['users']:
         if i['username']==username:
             data['users'].remove(i)
-            os.system(f'userdel -r {username}')
+            os.system(f'userdel -rf {username}')
             with open('./config/userdata.json','w') as f:
                 json.dump(data,f)
             return 1
