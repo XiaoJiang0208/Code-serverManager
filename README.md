@@ -4,7 +4,7 @@
 
 # 本项目还待完善慎重使用
 
-# 安装教程
+# 安装教程-[视频教程](https://www.bilibili.com/video/BV1wj411q7Yf/)
 ## 根据这个[教程](https://coder.com/docs/code-server/latest/install#debian-ubuntu)安装code-server
 ## 创建一个用户和目录来供示例使用
 创建主目录供用户，使用这里以`/home/code-server`为例
