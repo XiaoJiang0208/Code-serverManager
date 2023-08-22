@@ -116,6 +116,7 @@ def deluser(username):
         data=json.load(f)
     for i in data['users']:
         if i['username']==username:
+            stopserver(username)
             data['users'].remove(i)
             os.system(f'userdel -rf {username}')
             with open('./config/userdata.json','w') as f:
