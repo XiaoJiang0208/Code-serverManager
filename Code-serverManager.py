@@ -16,6 +16,9 @@ webapp = Flask(__name__)
 
 
 #webapp
+@webapp.route('/')
+def root():
+    return redirect(url_for('main'))
 #登录系统
 @webapp.route('/login/', methods=['GET', 'POST'])
 def login():
