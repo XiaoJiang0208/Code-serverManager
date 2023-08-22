@@ -205,7 +205,7 @@ def startserver(username):
                     if 'bind-addr' in i:
                         return i.split(':')[2]
                 return 0
-    os.system(f'sudo -u {setting["user-group"]} mkdir -p {setting["user-dir"]}/{username}/.config/code-server')
+    os.system(f'sudo -u {username} mkdir -p {setting["user-dir"]}/{username}/.config/code-server')
     with open(f'{setting["user-dir"]}/{username}/.config/code-server/config.yaml','w+') as of:
         while True: #抽一个端口
             if len(usedport)>=int(setting["code-server-port"].split('~')[1])-int(setting["code-server-port"].split('~')[0]):
